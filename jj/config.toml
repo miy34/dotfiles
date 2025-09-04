@@ -1,0 +1,11 @@
+[signing]
+backend = "ssh"
+behavior = "own"
+key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIaQeK8LSPQUd0sjfWCc+6OXsA9lbXJjP6W2sNyemUfU dev@miy34.com"
+
+[ui]
+default-command = ["st", "--no-pager"]
+
+[user]
+email = "gh@miy34.com"
+name = "miy34"

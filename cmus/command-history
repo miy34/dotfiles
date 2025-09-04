@@ -1,0 +1,8 @@
+colorscheme kanagawa_dragon
+colorscheme catppuccin
+q
+echo $cmus_error
+shell
+colorscheme amazon
+qt
+colorscheme jellybeans

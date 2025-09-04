@@ -1,0 +1,25 @@
+format = """
+$directory\
+[](fg:#394260 bg:#212736)\
+$time\
+[ ](fg:#1d2230)\
+\n$character"""
+
+[directory]
+style = "fg:#769ff0 bg:#394260"
+format = "[ $path ]($style)"
+truncation_length = 20
+truncation_symbol = "…/"
+truncate_to_repo = false
+
+[directory.substitutions]
+"documents" = "󰈙 "
+"downloads" = " "
+"music" = " "
+"images" = " "
+
+[time]
+disabled = false
+time_format = "%R" # Hour:Minute Format
+style = "bg:#1d2230"
+format = '[[  $time ](fg:#a0a9cb bg:#1d2230)]($style)'
