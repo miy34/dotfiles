@@ -1,13 +1,13 @@
 format = """
 $directory\
-[](fg:#394260 bg:#212736)\
+[ ](fg:#394260 bg:#1d2230)\
 $time\
-[ ](fg:#1d2230)\
+[ ](fg:#1d2230)\
 \n$character"""
 
 [directory]
 style = "fg:#769ff0 bg:#394260"
-format = "[ $path ]($style)"
+format = "[ $path]($style)"
 truncation_length = 20
 truncation_symbol = "…/"
 truncate_to_repo = false
