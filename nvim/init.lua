@@ -76,48 +76,54 @@ require("lazy").setup({
             { "<leader>s", "<cmd>Telescope lsp_document_symbols ignore_symbols={'field','enummember','function'}<CR>", desc = "List Symbols" },
         }
     },
-    {
-        "hrsh7th/nvim-cmp",
-        name = 'cmp',
-        dependencies = {
-            "hrsh7th/cmp-nvim-lsp",
-            "hrsh7th/cmp-path",
-            "hrsh7th/cmp-buffer",
-        },
-        config = function(plugin, opts)
-          vim.cmd([[set shortmess+=c]])
-
-          local cmp = require("cmp")
-          cmp.setup({
-          preselect = 'item',
-          completion = {
-              completeopt = 'menuone,noinsert,menu'
-          },
-          snippet = {
-            expand = function(args)
-                vim.snippet.expand(args.body)
-            end,
-          },
-            mapping = {
-            ["<S-Tab>"] = cmp.mapping.select_prev_item(),
-            ["<Tab>"] = cmp.mapping.select_next_item(),
-            ["<C-b>"] = cmp.mapping.scroll_docs(-4),
-            ["<C-f>"] = cmp.mapping.scroll_docs(4),
-            ["<C-Space>"] = cmp.mapping.complete(),
-            ["<CR>"] = cmp.mapping.confirm({
-              behavior = cmp.ConfirmBehavior.Replace,
-              select = true,
-            }),
-         },
-             sources = {
-                { name = "nvim_lsp" },
-                { name = "buffer" },
-                { name = "path" },
-            },
-          })
-        end
-
-    },
+    -- {
+    --     "hrsh7th/nvim-cmp",
+    --     name = 'cmp',
+    --     dependencies = {
+    --         "hrsh7th/cmp-nvim-lsp",
+    --         "hrsh7th/cmp-path",
+    --         "hrsh7th/cmp-buffer",
+    --     },
+    --     config = function(plugin, opts)
+    --       vim.cmd([[set shortmess+=c]])
+    --
+    --       local cmp = require("cmp")
+    --       cmp.setup({
+    --       preselect = 'item',
+    --       completion = {
+    --           completeopt = 'menuone,noinsert,menu',
+    --           autocomplete = false,
+    --       },
+    --       snippet = {
+    --         expand = function(args)
+    --             vim.snippet.expand(args.body)
+    --         end,
+    --       },
+    --         mapping = {
+    --         ["<S-Tab>"] = cmp.mapping.select_prev_item(),
+    --         ["<Tab>"] = cmp.mapping.select_next_item(),
+    --         ["<C-b>"] = cmp.mapping.scroll_docs(-4),
+    --         ["<C-f>"] = cmp.mapping.scroll_docs(4),
+    --         -- ["<C-Space>"] = cmp.mapping.complete(),
+    --         ["<CR>"] = cmp.mapping.confirm({
+    --           behavior = cmp.ConfirmBehavior.Replace,
+    --           select = true,
+    --         }),
+    --      },
+    --          sources = {
+    --             { name = "nvim_lsp",
+    --               entry_filter = function(entry, ctx)
+    --                 -- Only allow non-snippet kinds
+    --                 return require("cmp.types").lsp.CompletionItemKind[entry:get_kind()] ~= "Snippet"
+    --               end,
+    --             },
+    --             { name = "buffer" },
+    --             { name = "path" },
+    --         },
+    --       })
+    --     end
+    --
+    -- },
     {
         "godlygeek/tabular",
         ft = { "markdown" },
@@ -144,13 +150,10 @@ require("lazy").setup({
         "neovim/nvim-lspconfig",
         ft = { "rust", "markdown", "wgsl" },
         event = { "BufReadPre", "BufNewFile" },
-        dependencies = {
-            'hrsh7th/cmp-nvim-lsp',
-        },
         config = function(_, opts)
-            local capabilities = require("cmp_nvim_lsp").default_capabilities() 
+            -- local capabilities = require("cmp_nvim_lsp").default_capabilities() 
             for server, server_opts in pairs(opts.servers) do 
-                server_opts.capabilities = capabilities
+                -- server_opts.capabilities = capabilities
                 require("lspconfig")[server].setup(server_opts)
             end
 
@@ -257,6 +260,7 @@ vim.cmd([[packadd termdebug]])
 vim.g.termdebug_wide = 1
 
 vim.keymap.set("n", "<leader>t", ":Vista!!<CR>", { noremap = false })
+vim.keymap.set("i", "<C-Space>", "<C-x><C-o>", { noremap = false })
 -- buffer movement
 vim.keymap.set("n", "<leader>b", "<cmd>bnext<cr>", { noremap = false })
 vim.keymap.set("n", "<leader>p", "<cmd>bprev<cr>", { noremap = false })
@@ -402,3 +406,42 @@ end
 
 -- Create a command to call it after visual selection
 vim.api.nvim_create_user_command("QuickfixFromSelection", quickfix_from_selection, {range = true})
+
+function open_markdown_item()
+  -- Get the current line
+  local line = vim.fn.getline(".")
+
+  -- Try to extract a Markdown-style link target
+  local path = line:match("%[[^%]]+%]%(([^%)]+)%)")
+
+  if not path then
+    local word = vim.fn.expand("<cWORD>")
+    path = word:match("%(([^)]+)%)") or word
+  end
+
+  if not path then return end
+
+  -- Determine if it's a URL
+  if path:match("^https?://") or path:match("^file://") then
+    vim.fn.jobstart({ "xdg-open", path }, { detach = true })
+    return
+  end
+
+  -- Extract extension
+  local ext = path:match("^.+%.([^%.]+)$")
+  local xdg_exts = { png = true, jpg = true, jpeg = true, gif = true, mp4 = true, webm = true }
+
+  -- Build full file path
+  local root_dir = vim.fn.expand("%:p:h")
+  local full_path = vim.fn.fnamemodify(root_dir .. "/" .. path, ":p")
+
+  if ext and xdg_exts[ext:lower()] then
+    vim.fn.jobstart({ "xdg-open", full_path }, { detach = true })
+  else
+    vim.cmd.edit(full_path)
+  end
+end
+
+vim.api.nvim_create_user_command("OpenMarkdownItem", open_markdown_item, {})
+
+vim.keymap.set("n", "gx", open_markdown_item, { noremap = false })
