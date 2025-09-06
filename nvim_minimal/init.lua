@@ -10,6 +10,7 @@ vim.opt.expandtab = true
 vim.opt.cursorline = true
 vim.opt.title = true
 vim.opt.conceallevel = 1
+vim.opt.showcmd = false
 vim.opt.clipboard:append { 'unnamedplus' }
 vim.opt.shada = ""  -- disable shada file. No need to keep commands/jump lists or buffers around 
 vim.opt.hlsearch = false
@@ -95,5 +96,5 @@ vim.api.nvim_create_user_command("CurrentDate", current_date, {})
 vim.api.nvim_create_user_command("OpenMarkdownItem", open_markdown_item, {})
 
 -- keymaps
-vim.keymap.set("n", "T", current_date, { noremap = false })
+vim.keymap.set("n", "<leader><t>", current_date, { noremap = false })
 vim.keymap.set("n", "gx", open_markdown_item, { noremap = false })
