@@ -71,7 +71,8 @@ require("lazy").setup({
         keys = {
             { "<leader>f", "<cmd>Telescope find_files<CR>", desc = "Find Files" },
             { "<leader>n", "<cmd>Telescope resume<CR>", desc = "Open previous Telescope window" },
-            { "<leader>d", "<cmd>Telescope diagnostics<CR>", desc = "Diagnostics" },
+            { "<leader>e", "<cmd>Telescope diagnostics<CR>:e: ", desc = "Diagnostics errors" },
+            { "<leader>d", "<cmd>Telescope diagnostics<CR>", desc = "Diagnostic" },
             { "<leader>g", "<cmd>Telescope live_grep<CR>", desc = "Live Grep" },
             { "<leader>r", "<cmd>Telescope lsp_references<CR>", desc = "Find References" },
             { "<leader>s", "<cmd>Telescope lsp_document_symbols ignore_symbols={'field','enummember','function'}<CR>", desc = "List Symbols" },
