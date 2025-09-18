@@ -1,9 +1,16 @@
 format = """
+$nix_shell\
 $directory\
 [ ](fg:#394260 bg:#1d2230)\
 $time\
 [ ](fg:#1d2230)\
-\n$character"""
+\n$character
+"""
+
+[nix_shell]
+style = "fg:#769ff0 bg:#394260"
+format = '[$symbol]($style)'
+symbol = '❄️'
 
 [directory]
 style = "fg:#769ff0 bg:#394260"
