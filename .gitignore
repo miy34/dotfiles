@@ -1,2 +1,5 @@
 wireplumber/stream-properties
 nvim_lazy
+cmus/search-history
+cmus/cache
+cmus/command-history
