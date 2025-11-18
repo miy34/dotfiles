@@ -4,8 +4,8 @@ vim.g.mapleader = ' '
 vim.opt.filetype.plugin = true
 vim.opt.filetype.indent = true
 vim.opt.textwidth = 80
-vim.opt.tabstop = 4
-vim.opt.shiftwidth = 4
+vim.opt.tabstop = 2         -- visually treat tabs as 2
+vim.opt.shiftwidth = 4      -- but when auto-indenting, still use 4
 vim.opt.expandtab = true
 vim.opt.cursorline = true
 vim.opt.title = true
@@ -20,9 +20,13 @@ vim.opt.smartindent = true
 vim.opt.completeopt = { "menu" }
 vim.opt.foldenable = false
 vim.opt.wildmenu = true
+vim.o.exrc = true
+vim.o.secure = true
 vim.g.netrw_fastbrowse = 0 -- makes it so that the netwr buffer is closed after use
 
 vim.cmd.colorscheme("miy")
+
+local lsp_servers = {'rust-analyzer', 'marksman'}
 
 -- disable built-in treesitter 
 vim.api.nvim_create_autocmd("FileType", {
@@ -74,20 +78,22 @@ function toggle_quickfix()
 end
 
 function restart_lsp() 
-  local bufnr = vim.api.nvim_get_current_buf()
-  local clients = vim.lsp.get_clients({ bufnr = bufnr })
 
-  for _, client in ipairs(clients) do
-    -- Stop the client
-    client.stop(true)
-    -- Start it again with the same configuration
-    vim.lsp.start_client(client.config)
-  end
+    -- disable all configs (stops/detaches clients)
+    vim.lsp.enable(lsp_servers, false)
+
+    -- re-enable them (starts/attaches as appropriate)
+    vim.lsp.enable(lsp_servers, true)
 end
 
 function current_date()
   local date = os.date("%Y-%m-%d") -- Format as YYYY-MM-DD
   vim.api.nvim_put({ date }, "", true, true) -- Inserts the date at the cursor position
+end
+
+function current_time()
+  local time = os.date("%H:%M") 
+  vim.api.nvim_put({ time }, "", true, true)
 end
 
 function open_markdown_item()
@@ -127,6 +133,7 @@ end
 
 vim.api.nvim_create_user_command("QuickfixFromSelection", PopulateQuickfixFromSelection, {range = true})
 vim.api.nvim_create_user_command("CurrentDate", current_date, {})
+vim.api.nvim_create_user_command("CurrentTime", current_time, {})
 vim.api.nvim_create_user_command("OpenMarkdownItem", open_markdown_item, {})
 
 -- LSP 
@@ -158,7 +165,7 @@ vim.lsp.config('marksman', {
     filetypes = {'markdown'},
 })
 
-vim.lsp.enable({'rust-analyzer', 'marksman'})
+vim.lsp.enable(lsp_servers)
 
 vim.api.nvim_create_autocmd("DiagnosticChanged", {
     callback = function() 
@@ -178,25 +185,26 @@ end
 
 -- Keymaps
   -- util 
-vim.keymap.set("n", "<leader>t", current_date, { noremap = false })
-vim.keymap.set("n", "gx", open_markdown_item, { noremap = false })
+vim.keymap.set("n", "<leader>d", current_date)
+vim.keymap.set("n", "<leader>t", current_time)
+vim.keymap.set("n", "gx", open_markdown_item)
   -- lsp
-vim.keymap.set("n", "gk", hover,{ noremap = false })
-vim.keymap.set("n", "dk", vim.diagnostic.open_float,  { noremap = false })             
-vim.keymap.set("n", "ga", vim.lsp.buf.code_action,  { noremap = false })             
-vim.keymap.set("n", "gd", vim.lsp.buf.definition, { noremap = false })   
-vim.keymap.set("n", "gi", vim.lsp.buf.references, { noremap = false })  
-vim.keymap.set("n", "gr", vim.lsp.buf.rename, { noremap = false }) 
-vim.keymap.set("i", "<C-s>", vim.lsp.buf.signature_help, { noremap = false })
-vim.keymap.set("n", "<leader>f", vim.lsp.buf.format, { noremap = false })
-vim.keymap.set("n", "<leader>rr", restart_lsp, { noremap = false })
-vim.keymap.set("i", "<C-space>", "<C-x><C-o>", { noremap = false })
+vim.keymap.set("n", "gk", hover)
+vim.keymap.set("n", "dk", vim.diagnostic.open_float)             
+vim.keymap.set("n", "ga", vim.lsp.buf.code_action)             
+vim.keymap.set("n", "gd", vim.lsp.buf.definition)   
+vim.keymap.set("n", "gi", vim.lsp.buf.references)  
+vim.keymap.set("n", "gr", vim.lsp.buf.rename) 
+vim.keymap.set("i", "<C-s>", vim.lsp.buf.signature_help)
+vim.keymap.set("n", "<leader>rr", restart_lsp)
+vim.keymap.set("i", "<C-space>", "<C-x><C-o>")
+vim.keymap.set("n", "<leader>b", ":silent make!<CR>")
 
   -- quickfix
-vim.keymap.set("n", "dn", ":silent! cnext<CR>", { noremap = false })
-vim.keymap.set("n", "dp", ":silent! cprev<CR>", { noremap = false })
-vim.keymap.set("n", "dc", ":cclose<CR>", { noremap = false })
-vim.keymap.set("n", "dl", toggle_quickfix, { noremap = false })
+vim.keymap.set("n", "dn", ":silent! cnext<CR>")
+vim.keymap.set("n", "dp", ":silent! cprev<CR>")
+vim.keymap.set("n", "dc", ":cclose<CR>")
+vim.keymap.set("n", "dl", toggle_quickfix)
 
 -- diagnostics 
 vim.diagnostic.config({
@@ -243,4 +251,65 @@ vim.api.nvim_create_autocmd("DiagnosticChanged", {
       update_status_line()
     end,
 })
+
+function FZF(show_preview)
+  local preview_command = show_preview and "--preview 'bat --style=numbers --color=always {}'" or ""
+  local fzf_command = "fd --type f --strip-cwd-prefix | fzf --prompt '' --multi"
+  local awk_command = "awk '{ print $1 }'"
+
+  local tempname = vim.fn.tempname()
+  local buf = vim.api.nvim_create_buf(false, true)
+
+  -- window style
+  local width = math.floor(vim.o.columns * 0.8)
+  local height = math.floor(vim.o.lines * 0.8)
+  local row = math.floor((vim.o.lines - height) / 2)
+  local col = math.floor((vim.o.columns - width) / 2)
+
+  -- Create a floating window with a minimal style and rounded border
+  local win = vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    width = width,
+    height = height,
+    row = row,
+    col = col,
+    style = "minimal",
+    border = "rounded",
+  })
+
+  local cmd = fzf_command .. " " .. preview_command .. " | " .. awk_command .. " > " .. vim.fn.fnameescape(tempname)
+
+  -- Run the command in the terminal using termopen.
+  vim.fn.termopen(cmd, {
+    on_exit = function(job_id, exit_code, event)
+      -- Use vim.schedule to safely call Vim commands from the callback.
+      vim.schedule(function()
+        vim.api.nvim_win_close(win, true)
+        if exit_code == 0 then
+          local file = io.open(tempname, "r")
+          if not file then 
+              print("Error: Failed to open file " .. tempname)
+              return
+          end
+
+          local target = file:read("*l")
+          file:close()
+
+          if not target or target == "" then 
+              print("Error: No file to open")
+              return
+          end
+
+          -- vim.cmd("cfile " .. tempname)
+          vim.cmd("edit " .. vim.fn.fnameescape(target))
+        end
+
+        -- Clean up the temporary file.
+        vim.fn.delete(tempname)
+      end)
+    end,
+  })
+end
+
+vim.keymap.set('n', '<leader>f', ':lua FZF(true)<CR> i', { silent = true })
 

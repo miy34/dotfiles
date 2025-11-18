@@ -8,12 +8,15 @@ vim.g.colors_name = "miy"
 local hl = vim.api.nvim_set_hl
 
 local colors = {
-  bg       = "#1B1B2B", 
-  fg       = "#C0A8CF", 
+  bg       = "#1F1F28", 
+  -- bg       = "#1B1B2B", 
+  -- fg       = "#C0A8CF", 
+  fg      = "#f92672", 
   red      = "#F07078", 
   green    = "#90B080", 
+  blue      = "#7aa2f7",
   yellow   = "#E2B45C", 
-  blue     = "#7AA2F7", 
+  brown     = "#c07000", 
   purple   = "#C080D0", 
   cyan     = "#70C0D0", 
   orange   = "#FF9E64", 
@@ -23,6 +26,7 @@ local colors = {
 -- Define highlight groups
 hl(0, "Normal",   { fg=colors.purple })
 hl(0, "Comment",  { fg=colors.cyan, italic = true })
+hl(0, "SpecialComment",  { fg=colors.brown, italic = true })
 hl(0, "String",   { fg=colors.pink })
 
 -- link groups
@@ -53,12 +57,12 @@ hl(0, "LspFloatWinBorder", { fg = "#7FB4CA", bg = colors.bg })
 hl(0, "Pmenu",      { fg = "#D27E99", bg = "#1F1F28" })
 hl(0, "PmenuSel",   { fg = "#1F1F28", bg = "#7FB4CA" })
 
-hl(0, "markdownH1", { fg = colors.purple })
+hl(0, "markdownH1", { fg = colors.orange })
 hl(0, "markdownH2", { fg = colors.pink })
-hl(0, "markdownH3", { fg = colors.orange })
-hl(0, "markdownH4", { fg = colors.purple })
-hl(0, "markdownH5", { fg = colors.purple })
-hl(0, "markdownH6", { fg = colors.purple })
+hl(0, "markdownH3", { fg = colors.green })
+hl(0, "markdownH4", { fg = colors.blue })
+hl(0, "markdownH5", { fg = colors.red })
+hl(0, "markdownH6", { fg = colors.cyan })
 hl(0, "Todo", { fg = colors.bg, bg = colors.purple })
 
 local groups_to_neutralize = {
